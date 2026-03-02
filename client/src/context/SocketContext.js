@@ -1,7 +1,5 @@
 // SocketContext.js
-import React, { createContext,
-    useContext, useEffect, useState } from
-        'react';
+import React, { createContext, useContext } from "react";
 import io from "socket.io-client";
 
 const SocketContext = createContext(null);
@@ -11,46 +9,34 @@ const SocketContext = createContext(null);
 // Ainsi React StrictMode (qui monte/démonte les composants 2x) ne peut PAS le détruire.
 // Chaque onglet du navigateur charge son propre module → chaque onglet a son propre socket.
 
-// 🔹 IMPORTANT 🔹
-// Pour le développement sur PC et téléphone sur le même réseau,
-// il faut utiliser l'IP du PC accessible sur le réseau local.
-// Remplace "10.0.0.40" par l'IP locale réelle de ton PC.
-// "localhost" fonctionne uniquement sur le PC.
-const SOCKET_URLS = [
-    "http://localhost:5000",  // PC
-    "http://10.246.116.72:5000",  // téléphone sur le même Wi-Fi
-];
+// URL serveur en priorite via variable d'environnement (Vercel/React).
+// Si la variable est absente/invalide:
+// - localhost en developpement local
+// - URL Render en fallback de production
+const LOCAL_SOCKET_URL = "http://localhost:5000";
+const RENDER_FALLBACK_URL = "https://chat-app-react-4a3k.onrender.com";
+const envUrl = (process.env.REACT_APP_SERVER_URL || "").trim();
+const isPlaceholderUrl = envUrl.includes("votre-app.railway.app");
+const isLocalHost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
-// 🔹 Pour plus de sécurité, on peut choisir dynamiquement la bonne URL
-// selon la présence d'une variable d'environnement ou un paramètre.
-const DEFAULT_SOCKET_URL = SOCKET_URLS[1]; // utiliser IP réseau pour tests téléphone
+const DEFAULT_SOCKET_URL = !envUrl || isPlaceholderUrl
+    ? (isLocalHost ? LOCAL_SOCKET_URL : RENDER_FALLBACK_URL)
+    : envUrl;
 
 const socket = io(DEFAULT_SOCKET_URL, { autoConnect: false });
 
 // ────────────────
 // PROVIDER REACT
 // ────────────────
-export const SocketProvider = ({
-                                   children }) => {
-    const [socket, setSocket] =
-        useState(null);
-    useEffect(() => {
-        // Variable d'env Vercel OU fallback
-        //local
-        const SERVER_URL =
-            process.env.REACT_APP_SERVER_URL
-            || "http://localhost:5000";
-        const newSocket = io(SERVER_URL);
-        setSocket(newSocket);
-        return () => newSocket.close();
-    }, []);
+export function SocketProvider({ children }) {
     return (
-        <SocketContext.Provider
-            value={socket}>
+        <SocketContext.Provider value={socket}>
             {children}
         </SocketContext.Provider>
     );
-};
+}
 
 // ────────────────
 // HOOK UTILITAIRE

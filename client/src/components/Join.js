@@ -12,12 +12,17 @@ function Join({ username, setUsername, room, setRoom, setConnected }) {
     // Champ pour créer une nouvelle room
     const [newRoomName, setNewRoomName] = useState("");
     const [showCreate, setShowCreate] = useState(false);
+    const [connectionError, setConnectionError] = useState("");
 
     // ── Écouter la liste des rooms en temps réel ──────────────
     // Le serveur envoie "rooms_list" à chaque connexion/déconnexion
     useEffect(() => {
         const handleRoomsList = (list) => {
             setRoomsList(list);
+            setConnectionError("");
+        };
+        const handleConnectError = (err) => {
+            setConnectionError(err?.message || "Connexion au serveur impossible.");
         };
 
         // Se connecter au serveur pour recevoir la liste
@@ -26,9 +31,11 @@ function Join({ username, setUsername, room, setRoom, setConnected }) {
         }
 
         socket.on("rooms_list", handleRoomsList);
+        socket.on("connect_error", handleConnectError);
 
         return () => {
             socket.off("rooms_list", handleRoomsList);
+            socket.off("connect_error", handleConnectError);
         };
     }, [socket]);
 
@@ -122,7 +129,9 @@ function Join({ username, setUsername, room, setRoom, setConnected }) {
                     {/* Grille des rooms disponibles */}
                     <div className="roomsGrid">
                         {roomsList.length === 0 ? (
-                            <p className="loadingRooms">Chargement des rooms...</p>
+                            <p className="loadingRooms">
+                                {connectionError || "Chargement des rooms..."}
+                            </p>
                         ) : (
                             roomsList.map((r) => (
                                 <button
