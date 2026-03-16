@@ -2,9 +2,28 @@
 // Sidebar.js — Panneau latéral avec la liste des utilisateurs
 // ============================================================
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useSocket } from "../context/SocketContext";
 
 function Sidebar({ users, room, show, onClose }) {
+    const [activityLog, setActivityLog] = useState([]);
+    const socket = useSocket();
+    useEffect(() => {
+
+        const handleActivityLog = (activity) => {
+            setActivityLog((prev) => {
+                const updated = [activity, ...prev];
+                return updated.slice(0, 5);
+            });
+        };
+
+        socket.on("activity_log", handleActivityLog);
+
+        return () => {
+            socket.off("activity_log", handleActivityLog);
+        };
+
+    }, [socket]);
     return (
         <>
             {/* Fond semi-transparent quand la sidebar est ouverte (mobile) */}
@@ -36,6 +55,19 @@ function Sidebar({ users, room, show, onClose }) {
                     ) : (
                         <p className="noUsers">Aucun utilisateur</p>
                     )}
+                    <div className="activitySection">
+                        <h4>Activité recente</h4>
+
+                        {activityLog.length === 0 && (
+                            <p>Aucune activité</p>
+                        )}
+
+                        {activityLog.map((act, index) => (
+                            <div key={index} className="activityItem">
+                                {act.username} {act.action} #{act.room} à {act.time}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </>

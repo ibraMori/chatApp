@@ -29,6 +29,8 @@ function Message({ msg, username }) {
 
             {/* Heure d'envoi */}
             <span className="messageTime">{msg.time}</span>
+
+            {isOwn && <p className="messageLu">{"✓✓"}</p>}
         </div>
     );
 }

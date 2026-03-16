@@ -117,6 +117,55 @@ io.on("connection", (socket) => {
         io.to(room).emit("room_users", rooms[room].users);
         io.emit("rooms_list", getRoomsList());
     });
+    // quitter une room
+    socket.on("quit_room", ({ username, room }) => {
+        socket.leave(room);
+        io.to(room).emit("receive_message", {
+            author: "Système",
+            message: `${username} a quitté la room 👋`,
+            time: now(),
+            system: true,
+        });
+        const users = rooms[room];
+        io.to(room).emit("room_users", users);
+    });
+    // historique des connexions
+    io.on("connection", (socket) => {
+
+        socket.on("join_room", ({ username, room }) => {
+            socket.join(room);
+
+            const activity = {
+                username,
+                action: "a rejoint",
+                room,
+                time: new Date().toLocaleTimeString("fr-FR", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                })
+            };
+
+            // envoyer à TOUS les clients
+            io.emit("activity_log", activity);
+        });
+
+        socket.on("quit_room", ({ username, room }) => {
+            socket.leave(room);
+
+            const activity = {
+                username,
+                action: "a quitté",
+                room,
+                time: new Date().toLocaleTimeString("fr-FR", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                })
+            };
+
+            io.emit("activity_log", activity);
+        });
+
+    });
 });
 
 // ─── Helpers ───────────────────────────────

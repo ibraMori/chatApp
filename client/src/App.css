@@ -605,3 +605,47 @@ body {
     font-size: 13px;
     padding: 16px 0;
 }
+.messageLu {
+    font-size: 11px;
+    color: var(--text-light);
+    float: right;
+    margin-left: 8px;
+    margin-top: 2px;
+
+}
+.quitteButton:hover{
+    background: var(--wa-dark-green);
+    color: white;
+}
+.activitySection {
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.activitySection h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.activityItem {
+    font-size: 13px;
+    color: #444;
+    padding: 6px 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    background: #f7f7f7;
+    transition: background 0.2s ease;
+}
+
+.activityItem:hover {
+    background: #ececec;
+}
+
+.activityItem:last-child {
+    margin-bottom: 0;
+}

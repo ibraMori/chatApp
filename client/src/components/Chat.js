@@ -8,7 +8,7 @@ import { useSocket } from "../context/SocketContext";
 import Message from "./Message";
 import Sidebar from "./Sidebar";
 
-function Chat({ username, room }) {
+function Chat({ username, room,setConnected }) {
     // 🔹 Récupération du socket via le Context
     const socket = useSocket();
     // 🔹 État local : liste des messages et contenu du champ de saisie
@@ -16,6 +16,7 @@ function Chat({ username, room }) {
     const [currentMessage, setCurrentMessage] = useState("");
     const [users, setUsers] = useState([]);
     const [showSidebar, setShowSidebar] = useState(false);
+    //const [user, setConnected] = useState(true);
 
     // 🔹 Référence pour scroller automatiquement vers le bas
     const messagesEndRef = useRef(null);
@@ -73,6 +74,33 @@ function Chat({ username, room }) {
         setCurrentMessage("");
     };
 
+    const quitteRoom = () => {
+        const messageData = {
+            room,
+            author: "Système",
+            message: username + " a quitté la room",
+            time: new Date().toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+            }),
+        };
+
+        // message système
+        socket.emit("quit_message", messageData);
+
+        // informer le serveur que l'utilisateur quitte
+        socket.emit("quit_room", { username, room });
+
+        // revenir à l'écran de connexion
+        setTimeout(() => {
+            setConnected(false);
+        }, 100);
+
+
+
+
+
+    }
     // 🔹 Envoyer avec la touche Entrée (Shift+Entrée = nouvelle ligne)
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -101,8 +129,10 @@ function Chat({ username, room }) {
                         onClick={() => setShowSidebar(!showSidebar)}
                         title="Voir les participants"
                     >
+
                         <span></span><span></span><span></span>
                     </button>
+
                     <div className="chatHeaderInfo">
                         <div className="chatHeaderAvatar">
                             {room.charAt(0).toUpperCase()}
@@ -111,7 +141,13 @@ function Chat({ username, room }) {
                             <h3>#{room}</h3>
                             <p>{users.length} participant{users.length > 1 ? "s" : ""}</p>
                         </div>
+                        <button className="quitteButton" onClick={quitteRoom}
+                          >
+                            quitter la salle
+
+                        </button>
                     </div>
+
                 </div>
 
                 {/* Zone des messages */}
